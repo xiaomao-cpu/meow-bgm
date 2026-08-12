@@ -2838,7 +2838,10 @@
         selectedPanel.style.display = mode === 'dual' ? 'grid' : 'block';
       }
 
-      activeView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const vDual = activeView.querySelector('#view-dual');
+      const vYq = activeView.querySelector('#view-youquan');
+      const vLd = activeView.querySelector('#view-liddell');
+      const vAll = activeView.querySelector('#view-all');
 
       if (vDual) vDual.style.display = 'none';
       if (vYq) vYq.style.display = 'none';
@@ -2854,6 +2857,8 @@
       } else if (mode === 'all') {
         if (vAll) vAll.style.display = 'block';
       }
+
+      activeView.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function openMasterTab(tabName) {
