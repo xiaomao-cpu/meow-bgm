@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>《捉鬼》DM 專用一鍵音樂控台</title>
+  <style>
+    :root {
+      --bg-color: #0b0f14;
+      --bg-gradient: linear-gradient(135deg, #070a0e 0%, #0d1520 50%, #121d18 100%);
+      --panel-bg: rgba(16, 24, 32, 0.85);
+      --card-bg: rgba(22, 33, 44, 0.7);
+      --text-color: #e2f1f8;
+      --primary-color: #00ffc3;
+      --accent-color: #ffd700;
+      --alert-color: #ff3b5c;
+      --purple-color: #b967ff;
+      --sax-color: #ff9f43;
+      --tao-color: #00d2d3;
+      --dance-color: #ff5252;
+      --priest-color: #48dbfb;
+      --pink-color: #ff75a0;
+      --border-color: rgba(0, 255, 195, 0.25);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-color);
+      background-image: var(--bg-gradient);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      padding: 1.5rem 2rem 7rem 2rem;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%; left: -20%; width: 140%; height: 140%;
+      background: radial-gradient(circle at 50% 20%, rgba(0, 255, 195, 0.05) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(185, 103, 255, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 255, 195, 0.15);
+    }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      font-weight: 900;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-shadow: 0 0 12px rgba(0, 255, 195, 0.4);
+    }
+    header p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      color: #94a3b8;
+    }
+
+    .badge-ghost {
+      background: rgba(0, 255, 195, 0.15);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      backdrop-filter: blur(8px);
+    }
+    .stat-chip strong { color: var(--primary-color); }
+
+    .controls-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: rgba(15, 23, 32, 0.9);
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .search-box:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 15px rgba(0, 255, 195, 0.3), inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .btn-global-stop {
+      background: rgba(255, 59, 92, 0.2);
+      border: 1px solid var(--alert-color);
+      color: var(--alert-color);
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-global-stop:hover {
+      background: var(--alert-color);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 59, 92, 0.4);
+    }
+
+    .track-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .track-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.2rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .track-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary-color);
+      border-radius: 4px 0 0 4px;
+    }
+    .track-card.type-reading::before { background: var(--primary-color); }
+    .track-card.type-character::before { background: var(--purple-color); }
+    .track-card.type-performance::before { background: var(--accent-color); }
+    .track-card.type-sax::before { background: var(--sax-color); }
+    .track-card.type-tao::before { background: var(--tao-color); }
+    .track-card.type-dance::before { background: var(--dance-color); }
+    .track-card.type-priest::before { background: var(--priest-color); }
+    .track-card.type-pink::before { background: var(--pink-color); }
+    .track-card.type-funny::before { background: var(--alert-color); }
+
+    .track-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 255, 195, 0.2);
+    }
+    .track-card.playing {
+      border-color: var(--primary-color) !important;
+      background: rgba(0, 255, 195, 0.12) !important;
+      box-shadow: 0 0 25px rgba(0, 255, 195, 0.35) !important;
+      transform: translateY(-3px);
+    }
+
+    .track-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .track-scene-tag {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      color: var(--primary-color);
+      letter-spacing: 0.5px;
+    }
+    .track-card.type-character .track-scene-tag { color: var(--purple-color); }
+    .track-card.type-performance .track-scene-tag { color: var(--accent-color); }
+    .track-card.type-sax .track-scene-tag { color: var(--sax-color); }
+    .track-card.type-tao .track-scene-tag { color: var(--tao-color); }
+    .track-card.type-dance .track-scene-tag { color: var(--dance-color); }
+    .track-card.type-priest .track-scene-tag { color: var(--priest-color); }
+    .track-card.type-pink .track-scene-tag { color: var(--pink-color); }
+    .track-card.type-funny .track-scene-tag { color: var(--alert-color); }
+
+    .track-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.3rem;
+      line-height: 1.35;
+    }
+    .track-desc {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      background: rgba(0,0,0,0.25);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border-left: 2px solid rgba(255,255,255,0.15);
+    }
+
+    .track-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-play {
+      flex: 1.5;
+      background: var(--primary-color);
+      border: none;
+      color: #061118;
+      padding: 0.55rem 0.8rem;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .btn-play:hover {
+      background: #33ffcf;
+      box-shadow: 0 0 12px rgba(0, 255, 195, 0.5);
+    }
+    .btn-loop, .btn-fade {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .btn-loop:hover, .btn-fade:hover {
+      background: rgba(0, 255, 195, 0.2);
+      border-color: var(--primary-color);
+      color: #fff;
+    }
+    .btn-loop.active {
+      background: var(--accent-color);
+      color: #0b0f14;
+      border-color: var(--accent-color);
+      font-weight: 900;
+    }
+
+    #master-player-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      width: 100%;
+      min-width: 0;
+      height: 80px;
+      background: rgba(9, 14, 20, 0.96);
+      border-top: 2px solid var(--primary-color);
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.8);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 1000;
+    }
+
+    .player-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 28%;
+    }
+    .track-icon-wrapper {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(0, 255, 195, 0.15);
+      border: 1px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--primary-color);
+    }
+    .player-track-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #master-track-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #master-track-act {
+      font-size: 0.78rem;
+      color: var(--primary-color);
+      opacity: 0.9;
+    }
+
+    .player-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      width: 44%;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .ctrl-btn:hover {
+      background: rgba(0, 255, 195, 0.25);
+      border-color: var(--primary-color);
+    }
+    .ctrl-btn.play-main {
+      width: 44px; height: 44px;
+      background: var(--primary-color);
+      color: #0b0f14;
+      font-size: 1.1rem;
+      border: none;
+      box-shadow: 0 0 15px rgba(0, 255, 195, 0.4);
+    }
+    .ctrl-btn.play-main:hover {
+      background: #33ffcf;
+      transform: scale(1.05);
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      min-width: 0;
+    }
+    .time-lbl {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: #94a3b8;
+      min-width: 38px;
+    }
+    .progress-bar {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      height: 8px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .player-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.8rem;
+      width: 28%;
+    }
+    .vol-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .vol-bar {
+      width: 90px; height: 5px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .eq-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+    .eq-bar {
+      width: 3px;
+      background: var(--primary-color);
+      border-radius: 2px;
+      animation: bounce 1s ease-in-out infinite alternate;
+    }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 80%; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+    .eq-bar:nth-child(4) { height: 60%; animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+    .paused .eq-bar {
+      animation: none !important;
+      height: 30% !important;
+    }
+
+    .shortcuts-hint {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      border: 1px dashed var(--border-color);
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .kbd {
+      background: rgba(255,255,255,0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--primary-color);
+      font-family: monospace;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 1rem 1rem 7.5rem 1rem; }
+      header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+      .track-grid { grid-template-columns: 1fr; }
+      #master-player-bar {
+        height: auto;
+        padding: 0.6rem 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .player-left, .player-center, .player-right {
+        width: 100%;
+        justify-content: center;
+      }
+      .player-left { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>👻 《捉鬼》DM 專用音樂控台 <span class="badge-ghost">BGM Soundboard</span></h1>
+      <p>劇本殺《捉鬼》主持人獨立背景音樂專用播控系統</p>
+    </div>
+    <div style="text-align: right;">
+      <span class="badge-ghost" style="background: rgba(255, 215, 0, 0.15); color: var(--accent-color); border-color: var(--accent-color);">
+        共 11 首精選背景音軌
+      </span>
+    </div>
+  </header>
+
+  <div class="quick-stats">
+    <div class="stat-chip">📍 目前狀態: <strong id="status-text">就緒（待播放）</strong></div>
+    <div class="stat-chip">🎚️ Web Audio API 淡入淡出: <strong>已啟用 (3秒)</strong></div>
+    <div class="stat-chip">🎧 音訊目錄: <code>/Users/mo/Desktop/捉鬼BGM/</code></div>
+  </div>
+
+  <div class="controls-row">
+    <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋劇本幕數、第二幕讀本、Sneaky Snitch、偷感、馮淑良、一剪梅、道格神父、Never Gonna Give You Up、孔神婆、淨一真人、十齡法師、衛志祥或關鍵字..." oninput="filterTracks()">
+    <button class="btn-global-stop" onclick="fadeAndStopCurrent(3000)">
+      <span>⏹️</span> 柔和淡出停止 (3秒)
+    </button>
+  </div>
+
+  <div class="track-grid" id="track-grid"></div>
+
+  <div class="shortcuts-hint">
+    <span><span class="kbd">Space</span> 播放 / 暫停</span>
+    <span><span class="kbd">Esc</span> 3秒柔和淡出停止</span>
+    <span><span class="kbd">M</span> 靜音 / 恢復</span>
+    <span><span class="kbd">←</span> / <span class="kbd">→</span> 後退 / 前進 5 秒</span>
+  </div>
+
+  <audio id="audio-element" preload="auto"></audio>
+
+  <div id="master-player-bar">
+    <div class="player-left">
+      <div class="track-icon-wrapper">🎵</div>
+      <div class="player-track-info">
+        <div id="master-track-title">未在播放音樂</div>
+        <div id="master-track-act">點擊上方任何音軌卡片即可隨時播放</div>
+      </div>
+    </div>
+    <div class="player-center">
+      <div class="player-controls">
+        <button class="ctrl-btn" onclick="playPrev()" title="上一首 (P)">⏮</button>
+        <button class="ctrl-btn" onclick="seekBy(-5)" title="倒退 5 秒 (←)">⏪</button>
+        <button class="ctrl-btn play-main" id="master-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)">▶</button>
+        <button class="ctrl-btn" onclick="seekBy(5)" title="快進 5 秒 (→)">⏩</button>
+        <button class="ctrl-btn" onclick="playNext()" title="下一首 (N)">⏭</button>
+        <button class="ctrl-btn" id="master-loop-btn" onclick="toggleLoop()" title="單曲循環 (L)">🔁</button>
+      </div>
+      <div class="progress-row">
+        <span class="time-lbl" id="master-time-cur">0:00</span>
+        <input type="range" id="master-seek" class="progress-bar" value="0" min="0" max="100">
+        <span class="time-lbl" id="master-time-tot">0:00</span>
+      </div>
+    </div>
+    <div class="player-right">
+      <div class="eq-bars paused" id="master-eq-visualizer">
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+      </div>
+      <div class="vol-row" style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="ctrl-btn" id="master-mute-btn" onclick="toggleMute()" title="靜音 (M)">🔊</button>
+        <input type="range" id="master-volume" class="vol-bar" min="0" max="100" value="85" oninput="setVolume(this.value)" style="width: 85px; height: 5px; cursor: pointer;">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tracks = [
+      {
+        id: 1,
+        scene: '📖 第一幕 讀本&互動',
+        title: 'The Parson’s Farewell',
+        type: 'type-reading',
+        desc: '📌 第一幕開場讀本與角色初步互動配樂，營造古樸與神秘氛圍。',
+        file: '第一幕讀本&互動 _ The Parson’s Farewell.mp3'
+      },
+      {
+        id: 2,
+        scene: '📖 第二幕 讀本&互動',
+        title: 'Sneaky Snitch (偷感絕佳純音樂)',
+        type: 'type-reading',
+        desc: '📌 第二幕讀本與角色深入互動背景音樂，經典躡手躡腳、偷感極重、滑稽搞笑氛圍。',
+        file: '第二幕讀本&互動 _ Sneaky Snitch (偷感絕佳純音樂).mp3'
+      },
+      {
+        id: 3,
+        scene: '🎷 第二幕 衛志祥表演',
+        title: 'Careless Whisper (薩克斯風副歌高潮純享版)',
+        type: 'type-sax',
+        desc: '📌 第二幕衛志祥表演專用！已精確剪輯至薩克斯風最經典高潮 Hook (Saxophone Climax)。',
+        file: '第二幕衛志祥表演 _ Careless Whisper (無歌詞純享版).mp3'
+      },
+      {
+        id: 4,
+        scene: '☯️ 第二幕 淨一真人表演',
+        title: '畫離弦 (淺影阿女聲 03:31女聲開唱高潮 DJ版)',
+        type: 'type-tao',
+        desc: '📌 第二幕淨一真人表演專用！精確剪輯至 03:31 女聲開唱高潮 Hook（「你撫琵琶奏琴弦 我坐戲子樓台前...」），一點開即入經典歌詞與動感 DJ 鼓點。',
+        file: '第二幕淨一真人表演 _ 畫離弦 (淺影阿女聲DJ版).mp3'
+      },
+      {
+        id: 5,
+        scene: '📿 第二幕 十齡法師表演',
+        title: '誓言《求佛 DJ默涵版》',
+        type: 'type-performance',
+        desc: '📌 第二幕十齡法師法事表演與精彩高光時刻放鬆/魔性配樂！',
+        file: '十齡法師表演 _ 誓言《求佛 DJ默涵版》Official Lyric Video.mp3'
+      },
+      {
+        id: 6,
+        scene: '💃 第二幕 孔神婆表演',
+        title: '江南Style (副歌高潮純享版)',
+        type: 'type-dance',
+        desc: '📌 第二幕孔神婆表演專用！精確剪輯至最嗨副歌 (「Oppan Gangnam Style!」) 熱舞 Hook。',
+        file: '第二幕孔神婆表演 _ 江南Style (副歌高潮純享版).mp3'
+      },
+      {
+        id: 7,
+        scene: '✝️ 第二幕 道格神父表演',
+        title: 'Never Gonna Give You Up',
+        type: 'type-priest',
+        desc: '📌 第二幕道格神父表演專用！Rick Astley 經典魔性登場與熱舞配樂。',
+        file: '第二幕道格神父表演 _ Rick Astley - Never Gonna Give You Up.mp3'
+      },
+      {
+        id: 8,
+        scene: '🌸 第二幕 馮淑良表演',
+        title: '一剪梅 (無歌詞純音樂版)',
+        type: 'type-pink',
+        desc: '📌 第二幕馮淑良表演專用！《一剪梅》優美二胡與竹笛經典民樂演奏純音樂版。',
+        file: '第二幕馮淑良表演 _ 一剪梅 (無歌詞純音樂版).mp3'
+      },
+      {
+        id: 9,
+        scene: '🕵️ 副官出場 / 特殊角色',
+        title: '名探偵コナン「少年探偵団のテーマ」 (Flute Cover)',
+        type: 'type-character',
+        desc: '📌 副官登場專用音樂！少年偵探團長笛演繹版，風格輕快俏皮。',
+        file: '副官出場 _ 名探偵コナンBGM「少年探偵団のテーマ」 フルート演奏 -- Theme for Detective Boys -- Flute Cover.mp3'
+      },
+      {
+        id: 10,
+        scene: '📜 第三幕 讀本&互動',
+        title: 'Kikuchiyo\'s Mambo (Seven Samurai)',
+        type: 'type-reading',
+        desc: '📌 第三幕讀本與角色深度互動背景音樂，節奏明快。',
+        file: '第三幕讀本&互動 _ Kanbei & Katsushiro - Kikuchiyo\'s Mambo (from Seven Samurai).mp3'
+      },
+      {
+        id: 11,
+        scene: '⚡ 歡樂 / 搞笑高光',
+        title: '逆光（搞笑配樂版）',
+        type: 'type-funny',
+        desc: '📌 反轉場面、搞笑抓包或意想不到的反差劇情專用高光音軌。',
+        file: '逆光（搞笑配樂版）.mp3'
+      }
+    ];
+
+    let currentTrackId = null;
+    let isPlaying = false;
+    let isLooping = false;
+    let isMuted = false;
+    let savedVolume = 0.8;
+    let fadeInterval = null;
+    let isSeeking = false;
+
+    const audio = document.getElementById('audio-element');
+    const trackGrid = document.getElementById('track-grid');
+    const masterPlayBtn = document.getElementById('master-play-btn');
+    const masterLoopBtn = document.getElementById('master-loop-btn');
+    const masterTrackTitle = document.getElementById('master-track-title');
+    const masterTrackAct = document.getElementById('master-track-act');
+    const masterTimeCur = document.getElementById('master-time-cur');
+    const masterTimeTot = document.getElementById('master-time-tot');
+    const masterSeek = document.getElementById('master-seek');
+    const masterVolume = document.getElementById('master-volume');
+    const masterMuteBtn = document.getElementById('master-mute-btn');
+    const statusText = document.getElementById('status-text');
+    const masterEqVisualizer = document.getElementById('master-eq-visualizer');
+    const masterPlayerBar = document.getElementById('master-player-bar');
+
+    function ensureMasterBarMounted() {
+      const bar = document.getElementById('master-player-bar');
+      if (!bar) return;
+      let ancestor = bar.parentElement;
+      let shouldMove = false;
+
+      while (ancestor && ancestor !== document.body) {
+        const style = getComputedStyle(ancestor);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0' || style.width === '0px' || style.height === '0px') {
+          shouldMove = true;
+          break;
+        }
+        ancestor = ancestor.parentElement;
+      }
+
+      if (shouldMove || bar.parentElement !== document.body) {
+        document.body.appendChild(bar);
+        Object.assign(bar.style, {
+          display: 'flex',
+          position: 'fixed',
+          bottom: '0',
+          left: '0',
+          right: '0',
+          width: '100%',
+          zIndex: '9999',
+          visibility: 'visible',
+          opacity: '1'
+        });
+      }
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      ensureMasterBarMounted();
+    } else {
+      window.addEventListener('DOMContentLoaded', ensureMasterBarMounted);
+    }
+    setTimeout(ensureMasterBarMounted, 100);
+    setTimeout(ensureMasterBarMounted, 500);
+
+    function renderTracks(items) {
+      trackGrid.innerHTML = '';
+      items.forEach(track => {
+        const card = document.createElement('div');
+        card.className = `track-card ${track.type} ${currentTrackId === track.id ? 'playing' : ''}`;
+        card.id = `card-${track.id}`;
+
+        card.innerHTML = `
+          <div>
+            <div class="track-header">
+              <span class="track-scene-tag">${track.scene}</span>
+            </div>
+            <div class="track-title">${track.title}</div>
+            <div class="track-desc">${track.desc}</div>
+          </div>
+          <div class="track-actions">
+            <button class="btn-play" onclick="playTrack(${track.id})">
+              <span>${currentTrackId === track.id && isPlaying ? '⏸ 暫停' : '▶ 播放'}</span>
+            </button>
+            <button class="btn-fade" onclick="fadeAndStopCurrent(3000)" title="柔和淡出 3 秒">
+              🌫️ 淡出 (3s)
+            </button>
+            <button class="btn-loop ${currentTrackId === track.id && isLooping ? 'active' : ''}" onclick="toggleTrackLoop(${track.id})">
+              🔁 循環
+            </button>
+          </div>
+        `;
+        trackGrid.appendChild(card);
+      });
+    }
+
+    function filterTracks() {
+      const q = document.getElementById('search-input').value.toLowerCase().trim();
+      const filtered = tracks.filter(t => 
+        t.title.toLowerCase().includes(q) || 
+        t.scene.toLowerCase().includes(q) || 
+        t.desc.toLowerCase().includes(q)
+      );
+      renderTracks(filtered);
+    }
+
+    function playTrack(id) {
+      clearInterval(fadeInterval);
+      const track = tracks.find(t => t.id === id);
+      if (!track) return;
+
+      if (currentTrackId === id) {
+        togglePlayPause();
+        return;
+      }
+
+      currentTrackId = id;
+      audio.src = encodeURI(track.file);
+      audio.volume = parseFloat(masterVolume.value) / 100;
+      audio.loop = isLooping;
+
+      audio.play().then(() => {
+        isPlaying = true;
+        updateUI();
+      }).catch(err => {
+        console.error("Playback error:", err);
+        statusText.textContent = "⚠️ 播放失敗 (請確認音訊檔案位址)";
+      });
+    }
+
+    function togglePlayPause() {
+      if (!currentTrackId) {
+        if (tracks.length > 0) playTrack(tracks[0].id);
+        return;
+      }
+      clearInterval(fadeInterval);
+
+      if (audio.paused) {
+        audio.play();
+        isPlaying = true;
+      } else {
+        audio.pause();
+        isPlaying = false;
+      }
+      updateUI();
+    }
+
+    function playAudio(id) {
+      if (typeof id === 'number') {
+        playTrack(id);
+      } else {
+        togglePlay();
+      }
+    }
+
+    function playAudioWithLoop(id) {
+      if (typeof id === 'number') {
+        if (currentTrackId !== id) {
+          playTrack(id);
+        }
+      }
+      if (!isLooping) toggleLoop();
+    }
+
+    function playNext() {
+      if (tracks.length === 0) return;
+      const currentIndex = tracks.findIndex(t => t.id === currentTrackId);
+      const nextIndex = currentIndex < 0 || currentIndex === tracks.length - 1 ? 0 : currentIndex + 1;
+      playTrack(tracks[nextIndex].id);
+    }
+
+    function playPrev() {
+      if (tracks.length === 0) return;
+      const currentIndex = tracks.findIndex(t => t.id === currentTrackId);
+      const prevIndex = currentIndex <= 0 ? tracks.length - 1 : currentIndex - 1;
+      playTrack(tracks[prevIndex].id);
+    }
+
+    function toggleLoop() {
+      toggleGlobalLoop();
+    }
+
+    function togglePlay() {
+      togglePlayPause();
+    }
+
+    function updatePlayStateUI() {
+      updateUI();
+    }
+
+    function openMasterTab() {
+      statusText.textContent = '已切換至主播放器標籤';
+    }
+
+    function switchView(view) {
+      statusText.textContent = `已切換至檢視: ${view}`;
+    }
+
+    function fadeOutAudio(durationMs = 3000) {
+      fadeAndStopCurrent(durationMs);
+    }
+
+    function seekBy(seconds) {
+      if (!audio.duration || isNaN(audio.duration)) return;
+      audio.currentTime = Math.min(Math.max(audio.currentTime + seconds, 0), audio.duration);
+    }
+
+    function toggleGlobalLoop() {
+      isLooping = !isLooping;
+      audio.loop = isLooping;
+      masterLoopBtn.style.color = isLooping ? 'var(--primary-color)' : '#fff';
+      masterLoopBtn.style.borderColor = isLooping ? 'var(--primary-color)' : 'var(--border-color)';
+      renderTracks(tracks);
+    }
+
+    function toggleTrackLoop(id) {
+      if (currentTrackId !== id) {
+        playTrack(id);
+      }
+      toggleGlobalLoop();
+    }
+
+    masterSeek.addEventListener('mousedown', () => { isSeeking = true; });
+    masterSeek.addEventListener('touchstart', () => { isSeeking = true; });
+
+    masterSeek.addEventListener('input', (e) => {
+      isSeeking = true;
+      if (audio.duration && !isNaN(audio.duration)) {
+        const val = parseFloat(e.target.value);
+        const targetTime = (val / 100) * audio.duration;
+        masterTimeCur.textContent = formatTime(targetTime);
+        try {
+          audio.currentTime = targetTime;
+        } catch(err) {
+          console.log("Realtime seek error:", err);
+        }
+      }
+    });
+
+    function applySeek(val) {
+      if (audio.duration && !isNaN(audio.duration)) {
+        const targetTime = (parseFloat(val) / 100) * audio.duration;
+        try {
+          audio.currentTime = targetTime;
+        } catch(err) {
+          console.log("Seek error:", err);
+        }
+      }
+      setTimeout(() => { isSeeking = false; }, 150);
+    }
+
+    masterSeek.addEventListener('change', (e) => {
+      applySeek(e.target.value);
+    });
+
+    masterSeek.addEventListener('mouseup', (e) => {
+      applySeek(e.target.value);
+    });
+
+    masterSeek.addEventListener('touchend', (e) => {
+      applySeek(e.target.value);
+    });
+
+    function setVolume(val) {
+      const vol = parseFloat(val) / 100;
+      audio.volume = vol;
+      isMuted = vol === 0;
+      masterMuteBtn.textContent = isMuted ? '🔇' : (vol < 0.5 ? '🔉' : '🔊');
+    }
+
+    function toggleMute() {
+      if (isMuted) {
+        setVolume(savedVolume * 100);
+        masterVolume.value = savedVolume * 100;
+      } else {
+        savedVolume = audio.volume;
+        setVolume(0);
+        masterVolume.value = 0;
+      }
+    }
+
+    function updateUI() {
+      const track = tracks.find(t => t.id === currentTrackId);
+      if (track) {
+        masterTrackTitle.textContent = track.title;
+        masterTrackAct.textContent = track.scene;
+        statusText.textContent = isPlaying ? `▶️ 正在播放: ${track.title}` : `⏸️ 暫停中: ${track.title}`;
+      }
+
+      masterPlayBtn.textContent = isPlaying ? '⏸' : '▶';
+      
+      if (isPlaying) {
+        masterEqVisualizer.classList.remove('paused');
+      } else {
+        masterEqVisualizer.classList.add('paused');
+      }
+
+      renderTracks(tracks);
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration || isNaN(audio.duration)) return;
+      if (!isSeeking) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        masterSeek.value = pct;
+        masterTimeCur.textContent = formatTime(audio.currentTime);
+      }
+      masterTimeTot.textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      if (!isLooping) {
+        isPlaying = false;
+        updateUI();
+        statusText.textContent = "⏹️ 播放完畢";
+      }
+    });
+
+    renderTracks(tracks);
+  </script>
+</body>
+</html>
