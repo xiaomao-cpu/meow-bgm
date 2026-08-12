@@ -2888,7 +2888,7 @@
       masterPlayer.pause();
       // 若 src 包含專案資料夾前綴，但音檔實際上與 index.html 同層，則移除前綴以避免 404。
       try {
-        const prefixes = ['捉鬼BGM', '向生而死BGM'];
+        const prefixes = ['捉鬼BGM'];
         const parts0 = src.split('/');
         if (parts0.length > 1 && prefixes.includes(parts0[0])) {
           src = parts0.slice(1).join('/');
