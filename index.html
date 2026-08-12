@@ -2886,13 +2886,36 @@
       if (fadeTimer) clearInterval(fadeTimer);
 
       masterPlayer.pause();
-      masterPlayer.src = encodeURI(src);
+      // 若 src 包含專案資料夾前綴，但音檔實際上與 index.html 同層，則移除前綴以避免 404。
+      try {
+        const prefixes = ['捉鬼BGM', '向生而死BGM'];
+        const parts0 = src.split('/');
+        if (parts0.length > 1 && prefixes.includes(parts0[0])) {
+          src = parts0.slice(1).join('/');
+        }
+      } catch (e) {}
+
+      // 為避免中文/空白/& 等字元導致載入失敗，對相對路徑的每個 segment 使用 encodeURIComponent
+      let normalizedSrc = src;
+      try {
+        if (!/^https?:\/\//i.test(src)) {
+          normalizedSrc = src.split('/').map(part => encodeURIComponent(part)).join('/');
+        } else {
+          normalizedSrc = encodeURI(src);
+        }
+      } catch (e) {
+        normalizedSrc = encodeURI(src);
+      }
+      masterPlayer.src = normalizedSrc;
       masterPlayer.loop = isLoop;
       masterPlayer.volume = parseFloat(document.getElementById('master-volume').value) / 100;
 
       masterPlayer.play().then(() => {
         updatePlayStateUI(true);
-      }).catch(err => console.log(err));
+      }).catch(err => {
+        console.error('play() failed for', normalizedSrc, err);
+        showPlayerError('播放失敗: ' + (err && err.message ? err.message : err) + '\n檔案: ' + normalizedSrc);
+      });
 
       const allCards = Array.from(document.querySelectorAll('.track-card'));
       allCards.forEach(c => c.classList.remove('playing'));
@@ -2929,6 +2952,19 @@
       if (targetCard) {
         currentTrackIndex = allCards.indexOf(targetCard);
         targetCard.classList.add('playing');
+      }
+    }
+
+    function showPlayerError(msg) {
+      try {
+        const actEl = document.getElementById('master-track-act');
+        if (actEl) {
+          actEl.innerText = msg;
+        } else {
+          alert(msg);
+        }
+      } catch (e) {
+        try { alert(msg); } catch (_) { console.error(msg); }
       }
     }
 
