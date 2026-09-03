@@ -2768,6 +2768,7 @@
     let masterPlayer = new Audio();
     let fadeTimer = null;
     let currentTrackIndex = -1;
+    let activeCard = null;
     let isLoop = false;
     let isSeeking = false;
     let isMuted = false;
@@ -2951,6 +2952,7 @@
 
       if (targetCard) {
         currentTrackIndex = allCards.indexOf(targetCard);
+        activeCard = targetCard;
         targetCard.classList.add('playing');
       }
     }
@@ -2987,9 +2989,7 @@
       const cards = getVisibleTrackCards();
       if (cards.length === 0) return;
 
-      const activeView = document.querySelector('.portal-view.active');
-      const allCards = Array.from(activeView.querySelectorAll('.track-card'));
-      let currentCard = currentTrackIndex >= 0 ? allCards[currentTrackIndex] : null;
+      let currentCard = activeCard;
       let idxInCards = cards.indexOf(currentCard);
 
       let nextIndex = idxInCards + 1;
@@ -3007,9 +3007,7 @@
       const cards = getVisibleTrackCards();
       if (cards.length === 0) return;
 
-      const activeView = document.querySelector('.portal-view.active');
-      const allCards = Array.from(activeView.querySelectorAll('.track-card'));
-      let currentCard = currentTrackIndex >= 0 ? allCards[currentTrackIndex] : null;
+      let currentCard = activeCard;
       let idxInCards = cards.indexOf(currentCard);
 
       let prevIndex = idxInCards - 1;
