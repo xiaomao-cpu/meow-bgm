@@ -2769,6 +2769,7 @@
     let fadeTimer = null;
     let currentTrackIndex = -1;
     let activeCard = null;
+    let activeSrc = null;
     let isLoop = false;
     let isSeeking = false;
     let isMuted = false;
@@ -2883,6 +2884,13 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function getCardSrc(card) {
+      const b = card.querySelector('.btn-play');
+      if (!b) return null;
+      const m = (b.getAttribute('onclick') || '').match(/playAudio\('([^']+)'/);
+      return m ? m[1] : null;
+    }
+
     function playAudio(src, title, act, element) {
       if (fadeTimer) clearInterval(fadeTimer);
 
@@ -2953,6 +2961,7 @@
       if (targetCard) {
         currentTrackIndex = allCards.indexOf(targetCard);
         activeCard = targetCard;
+        activeSrc = src;
         targetCard.classList.add('playing');
       }
     }
@@ -2989,8 +2998,10 @@
       const cards = getVisibleTrackCards();
       if (cards.length === 0) return;
 
-      let currentCard = activeCard;
-      let idxInCards = cards.indexOf(currentCard);
+      // 用 src 字串比對：跨 tab 時同一首歌是不同 DOM 元素，但 src 一致
+      let idxInCards = activeSrc
+        ? cards.findIndex(c => getCardSrc(c) === activeSrc)
+        : cards.indexOf(activeCard);
 
       let nextIndex = idxInCards + 1;
       if (nextIndex >= cards.length) nextIndex = 0;
@@ -3007,8 +3018,10 @@
       const cards = getVisibleTrackCards();
       if (cards.length === 0) return;
 
-      let currentCard = activeCard;
-      let idxInCards = cards.indexOf(currentCard);
+      // 用 src 字串比對：跨 tab 時同一首歌是不同 DOM 元素，但 src 一致
+      let idxInCards = activeSrc
+        ? cards.findIndex(c => getCardSrc(c) === activeSrc)
+        : cards.indexOf(activeCard);
 
       let prevIndex = idxInCards - 1;
       if (prevIndex < 0) prevIndex = cards.length - 1;
