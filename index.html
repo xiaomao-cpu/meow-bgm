@@ -1827,8 +1827,8 @@
             <div class="track-use" spellcheck="false">📌 舞台互動對質音樂</div>
           </div>
           <div class="track-actions">
-            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d'ete》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
-            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d'ete》', '【第一幕_醉生夢死】', this)">🔁 循環</button>
+            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d&apos;ete》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d&apos;ete》', '【第一幕_醉生夢死】', this)">🔁 循環</button>
             <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
@@ -2864,15 +2864,26 @@
     }
 
     function openMasterTab(tabName) {
-      document.querySelectorAll('.portal-view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.master-tab-btn').forEach(b => b.classList.remove('active'));
-
+      // 隱藏所有 portal-view，並只顯示目標 view
+      const allPortalViews = Array.from(document.querySelectorAll('.portal-view'));
       const targetView = document.getElementById('view-hub-' + tabName);
-      const targetBtn = document.getElementById('tab-btn-' + tabName);
 
-      if (targetView) targetView.classList.add('active');
+      allPortalViews.forEach(v => {
+        if (v === targetView) {
+          v.classList.add('active');
+          v.style.display = '';
+        } else {
+          v.classList.remove('active');
+          v.style.display = 'none';
+        }
+      });
+
+      // 也移除其他 master tab 樣式並把對應按鈕標為 active（若存在）
+      document.querySelectorAll('.master-tab-btn').forEach(b => b.classList.remove('active'));
+      const targetBtn = document.getElementById('tab-btn-' + tabName);
       if (targetBtn) targetBtn.classList.add('active');
 
+      // 切換主題
       if (tabName === 'zhuogui') {
         document.body.className = 'theme-zhuogui';
       } else if (tabName === 'xiang') {
@@ -2881,6 +2892,9 @@
         document.body.className = 'theme-zhuogui';
       }
 
+      // 確保頁首不會被隱藏（保留 master-player-bar）並捲動到頂端
+      const masterBar = document.getElementById('master-player-bar');
+      if (masterBar) masterBar.style.display = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2895,9 +2909,9 @@
       if (fadeTimer) clearInterval(fadeTimer);
 
       masterPlayer.pause();
-      // 若 src 包含專案資料夾前綴，但音檔實際上與 index.html 同層，則移除前綴以避免 404。
+      // 若 src 包含專案資料夾前綴，且目前頁面已經位於音樂檔案根目錄，則移除前綴以避免 404。
       try {
-        const prefixes = ['捉鬼BGM'];
+        const prefixes = ['捉鬼BGM', '向生而死BGM'];
         const parts0 = src.split('/');
         if (parts0.length > 1 && prefixes.includes(parts0[0])) {
           src = parts0.slice(1).join('/');
