@@ -1068,8 +1068,8 @@
             <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
           </div>
           <div class="track-actions">
-            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">▶ 播放</button>
-            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">🔁 循環</button>
+            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this, 1.0)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this, 1.0)">🔁 循環</button>
             <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
             <button class="btn-fade" onclick="fadeOutAudio(3, true)">⏳ 淡出</button>
           </div>
@@ -1447,8 +1447,8 @@
           <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
         </div>
         <div class="track-actions">
-          <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">▶ 播放</button>
-          <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">🔁 循環</button>
+          <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this, 1.0)">▶ 播放</button>
+          <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this, 1.0)">🔁 循環</button>
           <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
           <button class="btn-fade" onclick="fadeOutAudio(3, true)">⏳ 淡出</button>
         </div>
@@ -1679,8 +1679,8 @@
             <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
           </div>
           <div class="track-actions">
-            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕】', this)">▶ 播放</button>
-            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕】', this)">🔁 循環</button>
+            <button class="btn-play" onclick="playAudio('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕】', this, 1.0)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('向生而死BGM/音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕】', this, 1.0)">🔁 循環</button>
             <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
             <button class="btn-fade" onclick="fadeOutAudio(3, true)">⏳ 淡出</button>
           </div>
@@ -2905,7 +2905,7 @@
       return m ? m[1] : null;
     }
 
-    function playAudio(src, title, act, element) {
+    function playAudio(src, title, act, element, startTime = 0) {
       if (fadeTimer) clearInterval(fadeTimer);
 
       masterPlayer.pause();
@@ -2925,6 +2925,7 @@
       masterPlayer.src = normalizedSrc;
       masterPlayer.loop = isLoop;
       masterPlayer.volume = parseFloat(document.getElementById('master-volume').value) / 100;
+      masterPlayer.currentTime = startTime;
 
       masterPlayer.play().then(() => {
         updatePlayStateUI(true);
@@ -2986,11 +2987,11 @@
       }
     }
 
-    function playAudioWithLoop(src, title, act, element) {
+    function playAudioWithLoop(src, title, act, element, startTime = 0) {
       if (!isLoop) {
         toggleLoop();
       }
-      playAudio(src, title, act, element);
+      playAudio(src, title, act, element, startTime);
     }
 
     function getVisibleTrackCards() {
