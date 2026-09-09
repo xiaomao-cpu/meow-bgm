@@ -2909,14 +2909,7 @@
       if (fadeTimer) clearInterval(fadeTimer);
 
       masterPlayer.pause();
-      // 若 src 包含專案資料夾前綴，且目前頁面已經位於音樂檔案根目錄，則移除前綴以避免 404。
-      try {
-        const prefixes = ['捉鬼BGM', '向生而死BGM'];
-        const parts0 = src.split('/');
-        if (parts0.length > 1 && prefixes.includes(parts0[0])) {
-          src = parts0.slice(1).join('/');
-        }
-      } catch (e) {}
+
 
       // 為避免中文/空白/& 等字元導致載入失敗，對相對路徑的每個 segment 使用 encodeURIComponent
       let normalizedSrc = src;
